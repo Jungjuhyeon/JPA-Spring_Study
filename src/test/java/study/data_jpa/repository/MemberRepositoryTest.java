@@ -4,6 +4,10 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.Sort;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 import study.data_jpa.dto.MemberDto;
@@ -123,5 +127,55 @@ class MemberRepositoryTest {
         //list를 조회할떄 빈 컬렉션을 제공해줌. list는 null 처리할 필요가 없다. 그냥 리스트는 절대 null이 안나옴. 무조건 빈 컬렉션을 리턴함 없어도.
         //단건 조회같은 경우는 null을 반환해주기 때문에 null처리를 해줘야함.
         //그래서 그냥 opitonal로 처리해!
+    }
+
+    @Test
+    public void paging() {
+
+        //given
+        memberRepository.save(new Member("member1", 10));
+        memberRepository.save(new Member("member2", 10));
+        memberRepository.save(new Member("member3", 10));
+        memberRepository.save(new Member("member4", 10));
+        memberRepository.save(new Member("member5", 10));
+
+        int age = 10;
+        PageRequest pageRequest = PageRequest.of(0, 3, Sort.Direction.DESC, "username"); //정렬안하고 싶으면 안 적어도 됨.
+
+        //when
+        Page<Member> page = memberRepository.findByAge(age, pageRequest);
+//        long totalCount = memberRepository.totalCount(age); ->토탈 카운트 적을 필요도 없다. 다 해줌.
+
+        Page<MemberDto> map = page.map(member -> new MemberDto(member.getId(), member.getUsername(), null));//dto처리
+
+        //then
+        List<Member> content = page.getContent();
+        long totalElements = page.getTotalElements(); //totalcount와 같음.
+
+        assertThat(content.size()).isEqualTo(3);
+        assertThat(page.getTotalElements()).isEqualTo(5);
+        assertThat(page.getNumber()).isEqualTo(0);
+        assertThat(page.getTotalPages()).isEqualTo(2);
+        assertThat(page.isFirst()).isTrue();
+        assertThat(page.hasNext()).isTrue();
+
+        //slice를 사용할때 슬라이스를 사용할때는 토탈카운트를 하지않음. 필요없으니
+/*
+        //when
+        Slice<Member> pages = memberRepository.findByAge(age, pageRequest);
+//        long totalCount = memberRepository.totalCount(age); ->토탈 카운트 적을 필요도 없다. 다 해줌.
+
+        //then
+        List<Member> contents = pages.getContent();
+//        long totalElementss = page.getTotalElements(); //totalcount와 같음.
+
+        assertThat(contents.size()).isEqualTo(3);
+//        assertThat(page.getTotalElements()).isEqualTo(5);
+        assertThat(pages.getNumber()).isEqualTo(0);
+//        assertThat(page.getTotalPages()).isEqualTo(2);
+        assertThat(pages.isFirst()).isTrue();
+        assertThat(pages.hasNext()).isTrue();
+    }
+*/
     }
 }
