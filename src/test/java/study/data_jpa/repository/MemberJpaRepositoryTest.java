@@ -8,6 +8,8 @@ import org.springframework.transaction.annotation.Transactional;
 import study.data_jpa.entity.Member;
 
 
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.*;
 
 @SpringBootTest
@@ -59,6 +61,34 @@ class MemberJpaRepositoryTest {
 //
 //        long deletedCount = memberJpaRepository.count();
 //        assertThat(deletedCount).isEqualTo(0);
+
+    }
+
+    @Test
+    public void paging(){
+
+        //given
+        memberJpaRepository.save(new Member("member1",10));
+        memberJpaRepository.save(new Member("member2",10));
+        memberJpaRepository.save(new Member("member3",10));
+        memberJpaRepository.save(new Member("member4",10));
+        memberJpaRepository.save(new Member("member5",10));
+
+        //page 1 offset =0, limit =10, page22 -> offset=10 ..
+
+        int age =10;
+        int offset =0;
+        int limit =3;
+        //when
+        List<Member> members = memberJpaRepository.findByPage(age, offset, limit);
+        long totalCount = memberJpaRepository.totalCount(age);
+
+        //페이지 계상 공식 적용...
+        // totalpage...
+
+        //then
+        assertThat(members.size()).isEqualTo(3);
+        assertThat(totalCount).isEqualTo(5);
 
     }
 
