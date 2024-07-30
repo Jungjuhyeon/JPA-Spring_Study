@@ -1,6 +1,6 @@
 package study.data_jpa.dto;
 
-import lombok.Data;
+import lombok.*;
 
 @Data
 public class MemberDto {

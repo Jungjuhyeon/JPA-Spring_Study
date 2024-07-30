@@ -3,7 +3,9 @@ package study.data_jpa.repository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import study.data_jpa.dto.MemberDto;
@@ -37,5 +39,21 @@ public interface MemberRepository extends JpaRepository<Member,Long> {
             countQuery = "select count(m.username) from Member m")
     Page<Member> findByAge(int age, Pageable pageable);
 
+    @Modifying(clearAutomatically = true) //이 어노테이션을 넣어야 수정하는 지 인지함. -> 여기서 영속성 컨텍스트를 비워줌.
+    @Query("update Member m set m.age = m.age+1 where m.age>= :age")
+    int bulkAgePlus(@Param("age") int age);
 
+    @Query("select m from Member m left join fetch m.team") //jpql를 사용해야함.fetch조인을 사용함.
+    List<Member> findMemberFetchJoin();
+
+    @Override
+    @EntityGraph(attributePaths = {"team"})
+    List<Member> findAll();
+
+    @EntityGraph(attributePaths = {"team"})
+    @Query("select m from Member m")
+    List<Member> findMemberEntityGraph();
+
+    @EntityGraph(attributePaths = {"team"})
+    List<Member> findEntityGraphByUsername(@Param("username") String username);
 }
