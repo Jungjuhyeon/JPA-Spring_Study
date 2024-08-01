@@ -1,22 +1,19 @@
 package study.data_jpa.repository;
 
+import jakarta.persistence.QueryHint;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
-import org.springframework.data.jpa.repository.EntityGraph;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 import study.data_jpa.dto.MemberDto;
 import study.data_jpa.entity.Member;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-public interface MemberRepository extends JpaRepository<Member,Long> {
+public interface MemberRepository extends JpaRepository<Member,Long>, MemberRepositoryCustom {
 
     @Query("select m from Member m where m.username = :username and m.age = :age")
     List<Member> findUser(@Param("username")String username, @Param("age") int age);
@@ -46,14 +43,24 @@ public interface MemberRepository extends JpaRepository<Member,Long> {
     @Query("select m from Member m left join fetch m.team") //jpql를 사용해야함.fetch조인을 사용함.
     List<Member> findMemberFetchJoin();
 
+    //EntityGraph
     @Override
     @EntityGraph(attributePaths = {"team"})
     List<Member> findAll();
 
+    //EntityGraph+jpql
     @EntityGraph(attributePaths = {"team"})
     @Query("select m from Member m")
     List<Member> findMemberEntityGraph();
 
+    //메서드 이름으로 쿼리에서 편리
     @EntityGraph(attributePaths = {"team"})
-    List<Member> findEntityGraphByUsername(@Param("username") String username);
+    List<Member> findEntityGraphByUsername(String username);
+
+    @QueryHints(value = @QueryHint(name = "org.hibernate.readOnly", value = "true"))
+    Member findReadOnlyByUsername(String username);
+
+
 }
+
+

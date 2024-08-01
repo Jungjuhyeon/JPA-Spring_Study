@@ -25,7 +25,7 @@ import static org.assertj.core.api.Assertions.*;
 
 @SpringBootTest
 @Transactional
-@Rollback(false)
+//@Rollback(false)
 class MemberRepositoryTest {
     @Autowired
     MemberRepository memberRepository;
@@ -209,7 +209,6 @@ class MemberRepositoryTest {
         //given
         //member1 -> teamA
         //member2 -> teamB
-
         Team teamA = new Team("teamA");
         Team teamB = new Team("teamB");
         teamRepository.save(teamA);
@@ -224,13 +223,29 @@ class MemberRepositoryTest {
         
         //when
         //select N+1 problem
-        List<Member> members = memberRepository.findEntityGraphByUsername("member1");
+        List<Member> members = memberRepository.findAll();
 
         for (Member member : members) {
             System.out.println("member = " + member.getUsername());
             System.out.println("member = " + member.getTeam().getName()); //getTeam은 프록시 객체로 가져오는데 여기서 getName읋 할시 쿼리가 날라감.
-
         }
+    }
+    @Test
+    public void queryHint(){
+        //given
+        Member member1 = memberRepository.save(new Member("member1", 10));
+        em.flush();
+        em.clear();
+
+        //when
+        Member findMember = memberRepository.findReadOnlyByUsername("member1");
+        //만약 나는 화면에 이것을 뿌리는 용도로만 사용할거지, 이를 활용할 필요가 없다. 1차캐시에도 들어있을 필요가 없을때 사용ㅇ함.
+        //스냅샷도 안하고, 더티체킹도 안함.
+        findMember.setUsername("member2");
+
+        em.flush();
 
     }
+
+
 }
