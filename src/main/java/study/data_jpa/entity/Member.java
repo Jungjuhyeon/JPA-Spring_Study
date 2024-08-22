@@ -7,15 +7,14 @@ import lombok.*;
 @Getter @Setter //setter는 사용 x
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @ToString(of ={ "id", "username","age"})
-public class Member {
+public class Member extends BaseEntity {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name ="member_id")
     private Long id;
     private String username;
     private int age;
-
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name ="team_id")
